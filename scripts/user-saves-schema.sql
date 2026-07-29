@@ -1,5 +1,5 @@
 -- ============================================================
--- user_saves Schema für SpiderZ Cloud-Sync
+-- user_saves Schema für Pokiman Cloud-Sync
 -- Füge fehlende Spalten hinzu (falls noch nicht vorhanden)
 -- ============================================================
 

@@ -1,7 +1,7 @@
 // ============================================================
-//  NasaMon Seed  (läuft NUR lokal mit Service-Role-Key)
-//  - lädt die 18 Bilder aus ~/Desktop/NasaMon nach Supabase Storage
-//  - legt 18 nasamon-Datensätze an (eigene Namen + Stats)
+//  pokiman Seed  (läuft NUR lokal mit Service-Role-Key)
+//  - lädt die 18 Bilder aus ~/Desktop/pokiman nach Supabase Storage
+//  - legt 18 pokiman-Datensätze an (eigene Namen + Stats)
 //  Voraussetzungen:
 //    1) .env mit VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY,
 //       SUPABASE_SERVICE_ROLE_KEY (NICHT committen!)
@@ -25,10 +25,10 @@ if (!URL || !SERVICE) {
 
 const supabase = createClient(URL, SERVICE, { auth: { persistSession: false } });
 
-// 18 NasaMon (Reihenfolge = Reihenfolge der Bilddateien im Ordner)
+// 18 pokiman (Reihenfolge = Reihenfolge der Bilddateien im Ordner)
 // stats: hp, attack, defense, special-attack, special-defense, speed (wie PokeAPI)
 const CARDS = [
-  { name_de: "Arachnex",   name_en: "arachnex",   types: ["bug", "dark"],
+  { name_de: "Kantox",   name_en: "arachnex",   types: ["bug", "dark"],
     stats: { hp: 70, attack: 110, defense: 80, "special-attack": 60, "special-defense": 70, speed: 95 } },
   { name_de: "Noxfang",    name_en: "noxfang",    types: ["dark", "poison"],
     stats: { hp: 65, attack: 95, defense: 75, "special-attack": 85, "special-defense": 72, speed: 88 } },
@@ -80,7 +80,7 @@ function computeStrength(stats) {
 }
 
 // Bilder aus dem Desktop-Ordner (glob, Reihenfolge = Dateisystem)
-const IMAGE_DIR = process.env.NASAMON_DIR || "~/Desktop/NasaMon";
+const IMAGE_DIR = process.env.POKIMAN_DIR || "~/Desktop/pokiman";
 const expand = (p) => (p.startsWith("~") ? join(process.env.HOME, p.slice(1)) : p);
 const dir = expand(IMAGE_DIR);
 const files = readdirSync(dir).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
@@ -105,11 +105,11 @@ async function run() {
     // Bild → Storage
     const buf = readFileSync(filePath);
     const { error: upErr } = await supabase.storage
-      .from("nasamon")
+      .from("pokiman")
       .upload(storageKey, buf, { contentType: mime, upsert: true });
     if (upErr) { console.error(`Upload ${storageKey} fehlgeschlagen:`, upErr.message); throw upErr; }
 
-    const { data: urlData } = supabase.storage.from("nasamon").getPublicUrl(storageKey);
+    const { data: urlData } = supabase.storage.from("pokiman").getPublicUrl(storageKey);
 
     // Datensatz → Tabelle
     const statsArr = Object.entries(card.stats).map(([name, value]) => ({ name, value }));
@@ -125,12 +125,12 @@ async function run() {
       weight: 180 + (i % 9) * 40,
     };
 
-    const { error: insErr } = await supabase.from("nasamon").upsert(row, { onConflict: "id" });
+    const { error: insErr } = await supabase.from("pokiman").upsert(row, { onConflict: "id" });
     if (insErr) { console.error(`Insert ${card.name_en} fehlgeschlagen:`, insErr.message); throw insErr; }
 
     console.log(`✓ ${row.id} ${card.name_de} (${row.strength}) → ${storageKey}`);
   }
-  console.log("\nFERTIG: 18 NasaMon in Supabase Storage + Tabelle.");
+  console.log("\nFERTIG: 18 pokiman in Supabase Storage + Tabelle.");
 }
 
 run().catch((e) => { console.error(e); process.exit(1); });

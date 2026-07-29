@@ -1,5 +1,5 @@
 /* ============================================================
-   SpiderZ × ErdBären2 Design-System
+   Pokiman × ErdBären2 Design-System
    Basis: erdbaeren2 Light-Mode (lila Helligkeit, dunkle
    Glass-Panels, Neon-Akzente, Space Grotesk/Mono).
    Funktionalität unverändert — nur Optik.
@@ -225,7 +225,7 @@ body {
 .bar-pulse { animation: pulse-bar 1.6s ease-in-out infinite; }
 
 /* ============================================================
-   SpiderZ — Sternenfeld (Holo-Effekt aus tausenden Sternen)
+   Pokiman — Sternenfeld (Holo-Effekt aus tausenden Sternen)
    Gerendert per Canvas 2D in src/starfield.js (Engine in main.jsx
    gestartet). CSS-only Container, kein box-shadow mehr.
    ============================================================ */

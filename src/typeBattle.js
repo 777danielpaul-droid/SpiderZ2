@@ -1,77 +1,43 @@
-// Schere/Stein/Papier-Typen-Logik für SpiderZ-Kämpfe.
-// Jeder vorkommende Typ wird einer SSP-Fraktion zugeordnet.
-// Zyklus: SCHERE > PAPIER > STEIN > SCHERE (klassisch).
-
-export const FACTION = { SCHERE: "SCHERE", PAPIER: "PAPIER", STEIN: "STEIN" };
-
-// Mapping Typ -> Fraktion (anpassbar, zentrale Stelle).
-const TYPE_FACTION = {
-  // SCHERE = Angriff
-  bug: FACTION.SCHERE,
-  dark: FACTION.SCHERE,
-  poison: FACTION.SCHERE,
-  fighting: FACTION.SCHERE,
-  // STEIN = Verteidigung
-  steel: FACTION.STEIN,
-  ground: FACTION.STEIN,
-  water: FACTION.STEIN,
-  // PAPIER = Spezial
-  flying: FACTION.PAPIER,
-  fire: FACTION.PAPIER,
-  electric: FACTION.PAPIER,
-  psychic: FACTION.PAPIER,
-  ghost: FACTION.PAPIER,
-  fairy: FACTION.PAPIER,
-};
-
-// Jede Fraktion schlägt genau eine andere (zyklisch).
-const BEATS = {
-  [FACTION.SCHERE]: FACTION.PAPIER,
-  [FACTION.PAPIER]: FACTION.STEIN,
-  [FACTION.STEIN]: FACTION.SCHERE,
-};
-
-export const BONUS = 100;
-
-// Liefert die Fraktion eines Typs (oder null, wenn unbekannt).
-export function factionOf(type) {
-  return TYPE_FACTION[type] || null;
-}
-
-// Hat `a` (Typ) einen Typ-Vorteil gegen `b` (Typ)?
-// Prüft beide Typen jeder Seite: einer reicht für Vorteil.
-export function hasAdvantage(typesA = [], typesB = []) {
-  const fa = typesA.map(factionOf).filter(Boolean);
-  const fb = typesB.map(factionOf).filter(Boolean);
-  if (!fa.length || !fb.length) return false;
-  return fa.some((x) => fb.some((y) => BEATS[x] === y));
-}
-
-// Liefert die Fraktion mit Vorteil für Anzeige (erster Treffer), sonst null.
-export function advantageFaction(typesA = [], typesB = []) {
-  const fa = typesA.map(factionOf).filter(Boolean);
-  const fb = typesB.map(factionOf).filter(Boolean);
-  const hit = fa.find((x) => fb.some((y) => BEATS[x] === y));
-  return hit || null;
-}
-
-// Einzel-Match auflösen: 1:1, Typ-Vorteil = +100 Stärke-Bonus.
-// Gibt { winner: 'a'|'b', bonusA, bonusB, valueA, valueB, hasTypeWin } zurück.
-export function resolveMatch(a, b) {
-  const bonusA = hasAdvantage(a.types, b.types) ? BONUS : 0;
-  const bonusB = hasAdvantage(b.types, a.types) ? BONUS : 0;
-  const valueA = (a.strength || 0) + bonusA;
-  const valueB = (b.strength || 0) + bonusB;
-  const winner = valueA === valueB ? "draw" : valueA > valueB ? "a" : "b";
-  return {
-    winner,
-    bonusA,
-    bonusB,
-    valueA,
-    valueB,
-    // true, wenn der Gewinner durch reinen Typ-Vorteil (und nicht Stärke) gewinnt
-    hasTypeWin:
-      (winner === "a" && bonusA > 0 && a.strength <= b.strength) ||
-      (winner === "b" && bonusB > 0 && b.strength <= a.strength),
+export function getTypeMultiplier(moveType, defenderTypes) {
+  const table = {
+    normal:   { rock: 0.5, ghost: 0 },
+    fire:     { fire: 0.5, water: 0.5, grass: 2, ice: 2, bug: 2, rock: 0.5, dragon: 0.5 },
+    water:    { fire: 2, water: 0.5, grass: 0.5, ground: 2, rock: 2, dragon: 0.5 },
+    electric: { water: 2, electric: 0.5, grass: 0.5, ground: 0, flying: 2, dragon: 0.5 },
+    grass:    { fire: 0.5, water: 2, grass: 0.5, poison: 0.5, ground: 2, flying: 0.5, bug: 0.5, rock: 2, dragon: 0.5 },
+    ice:      { water: 0.5, grass: 2, ice: 0.5, ground: 2, flying: 2, dragon: 2 },
+    fighting: { normal: 2, ice: 2, poison: 0.5, flying: 0.5, psychic: 0.5, bug: 0.5, rock: 2, ghost: 0, dark: 2, steel: 2 },
+    poison:   { grass: 2, poison: 0.5, ground: 0.5, bug: 2, rock: 0.5, ghost: 0.5 },
+    ground:   { fire: 2, electric: 2, grass: 0.5, poison: 2, flying: 0, bug: 0.5, rock: 2 },
+    flying:   { electric: 0.5, grass: 2, fighting: 2, bug: 2, rock: 0.5 },
+    psychic:  { fighting: 2, poison: 2, psychic: 0.5, dark: 0, steel: 0.5 },
+    bug:      { fire: 0.5, grass: 2, fighting: 0.5, poison: 2, flying: 0.5, psychic: 2, ghost: 0.5, dark: 2, steel: 0.5 },
+    rock:     { fire: 2, ice: 2, fighting: 0.5, ground: 0.5, flying: 2, bug: 2, steel: 0.5 },
+    ghost:    { normal: 0, psychic: 2, ghost: 2, dark: 0.5 },
+    dragon:   { dragon: 2, steel: 0.5 },
+    dark:     { fighting: 0.5, psychic: 2, ghost: 2, dark: 0.5 },
+    steel:    { fire: 0.5, water: 0.5, electric: 0.5, ice: 2, rock: 2, steel: 0.5 },
+    fairy:    { fire: 0.5, fighting: 2, poison: 0.5, dragon: 2, dark: 2, steel: 0.5 },
   };
+  const map = table[moveType] || {};
+  let result = 1;
+  for (const t of defenderTypes || []) {
+    const v = map[t];
+    if (typeof v === "number") result *= v;
+  }
+  return result;
 }
+
+export function resolveMatch(a, b) {
+  const aAdv = getTypeMultiplier(a.types?.[0], b.types || []);
+  const bAdv = getTypeMultiplier(b.types?.[0], a.types || []);
+  if (aAdv > bAdv) return { winner: "a", hasTypeWin: true, bonusA: aAdv > 1 ? BONUS : 1, bonusB: bAdv > 1 ? BONUS : 1 };
+  if (bAdv > aAdv) return { winner: "b", hasTypeWin: true, bonusA: aAdv > 1 ? BONUS : 1, bonusB: bAdv > 1 ? BONUS : 1 };
+  return { winner: "draw", hasTypeWin: false, bonusA: 1, bonusB: 1 };
+}
+
+export function hasAdvantage(attacker, defender) {
+  return getTypeMultiplier(attacker.types?.[0], defender.types || []) >= 2;
+}
+
+export const BONUS = 1.25;

@@ -23,24 +23,24 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 const spiderData = [
-  { id: 101, name_de: "Nebel-Spinner", name_en: "Mist Spider", fileName: "Experiment001.jpg", types: ["bug", "poison"], strength: 120, rarity: "common" },
-  { id: 102, name_de: "Flammen-Spinner", name_en: "Flame Spider", fileName: "Experiment002.jpg", types: ["fire", "bug"], strength: 150, rarity: "rare" },
-  { id: 103, name_de: "Eis-Spinner", name_en: "Ice Spider", fileName: "Experiment003.jpg", types: ["ice", "bug"], strength: 145, rarity: "rare" },
-  { id: 104, name_de: "Blitz-Spinner", name_en: "Lightning Spider", fileName: "Experiment004.jpg", types: ["electric", "bug"], strength: 155, rarity: "rare" },
-  { id: 105, name_de: "Schatten-Spinner", name_en: "Shadow Spider", fileName: "Experiment005.jpg", types: ["dark", "bug"], strength: 160, rarity: "rare" },
-  { id: 106, name_de: "Licht-Spinner", name_en: "Light Spider", fileName: "Experiment006.jpg", types: ["fairy", "bug"], strength: 180, rarity: "legendary" },
+  { id: 101, name_de: "Nebel-Pokemonr", name_en: "Mist Spider", fileName: "Experiment001.jpg", types: ["bug", "poison"], strength: 120, rarity: "common" },
+  { id: 102, name_de: "Flammen-Pokemonr", name_en: "Flame Spider", fileName: "Experiment002.jpg", types: ["fire", "bug"], strength: 150, rarity: "rare" },
+  { id: 103, name_de: "Eis-Pokemonr", name_en: "Ice Spider", fileName: "Experiment003.jpg", types: ["ice", "bug"], strength: 145, rarity: "rare" },
+  { id: 104, name_de: "Blitz-Pokemonr", name_en: "Lightning Spider", fileName: "Experiment004.jpg", types: ["electric", "bug"], strength: 155, rarity: "rare" },
+  { id: 105, name_de: "Schatten-Pokemonr", name_en: "Shadow Spider", fileName: "Experiment005.jpg", types: ["dark", "bug"], strength: 160, rarity: "rare" },
+  { id: 106, name_de: "Licht-Pokemonr", name_en: "Light Spider", fileName: "Experiment006.jpg", types: ["fairy", "bug"], strength: 180, rarity: "legendary" },
   { id: 107, name_de: "Sturmblick", name_en: "Storm Spider", fileName: "Experiment007.jpg", types: ["flying", "bug"], strength: 150, rarity: "rare" },
-  { id: 108, name_de: "Gift-Spinner", name_en: "Venom Spider", fileName: "Experiment008.jpg", types: ["poison", "dark"], strength: 155, rarity: "rare" },
-  { id: 109, name_de: "Phantom-Spinner", name_en: "Phantom Spider", fileName: "Experiment009.jpg", types: ["ghost", "bug"], strength: 185, rarity: "legendary" },
+  { id: 108, name_de: "Gift-Pokemonr", name_en: "Venom Spider", fileName: "Experiment008.jpg", types: ["poison", "dark"], strength: 155, rarity: "rare" },
+  { id: 109, name_de: "Phantom-Pokemonr", name_en: "Phantom Spider", fileName: "Experiment009.jpg", types: ["ghost", "bug"], strength: 185, rarity: "legendary" },
 ];
 
 async function seed() {
   console.log("🕷️  Seeding 9 Experiment-Spider...\n");
 
   for (const spider of spiderData) {
-    const artworkUrl = `${SUPABASE_URL}/storage/v1/object/public/nasamon/${spider.fileName}`;
+    const artworkUrl = `${SUPABASE_URL}/storage/v1/object/public/pokiman/${spider.fileName}`;
 
-    const { error } = await supabase.from("nasamon").upsert({
+    const { error } = await supabase.from("pokiman").upsert({
       id: spider.id,
       name_de: spider.name_de,
       name_en: spider.name_en,

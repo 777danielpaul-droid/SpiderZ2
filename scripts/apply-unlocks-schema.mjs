@@ -32,7 +32,7 @@ async function applySchema() {
   console.log("1️⃣  Spider #101-104 als 'locked' markieren...");
   try {
     const { data, error } = await supabase
-      .from("nasamon")
+      .from("pokiman")
       .update({ available: false })
       .in("id", [101, 102, 103, 104]);
 
@@ -77,14 +77,14 @@ async function applySchema() {
 
     console.log(`
 -- Füge Spalten hinzu (falls nicht vorhanden)
-ALTER TABLE public.nasamon
+ALTER TABLE public.pokiman
   ADD COLUMN IF NOT EXISTS rarity    text      NOT NULL DEFAULT 'common',
   ADD COLUMN IF NOT EXISTS available boolean   NOT NULL DEFAULT true;
 
 -- Erstelle user_unlocks Tabelle
 CREATE TABLE IF NOT EXISTS public.user_unlocks (
   user_id      uuid      PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  spider_id    integer   NOT NULL REFERENCES nasamon(id) ON DELETE CASCADE,
+  spider_id    integer   NOT NULL REFERENCES pokiman(id) ON DELETE CASCADE,
   unlocked_at  timestamptz NOT NULL DEFAULT now()
 );
 
@@ -98,7 +98,7 @@ CREATE POLICY IF NOT EXISTS "user writes own unlocks"
   ON public.user_unlocks FOR INSERT WITH CHECK (auth.uid() = user_id);
 
 -- Markiere neue Spider als locked
-UPDATE public.nasamon SET available = false WHERE id IN (101, 102, 103, 104);
+UPDATE public.pokiman SET available = false WHERE id IN (101, 102, 103, 104);
     `);
 
   } catch (err) {
@@ -109,7 +109,7 @@ UPDATE public.nasamon SET available = false WHERE id IN (101, 102, 103, 104);
   console.log("\n3️⃣  Rarity-Werte setzen...");
   try {
     const { error } = await supabase
-      .from("nasamon")
+      .from("pokiman")
       .update({ rarity: "rare" })
       .eq("id", 101);
 
@@ -119,9 +119,9 @@ UPDATE public.nasamon SET available = false WHERE id IN (101, 102, 103, 104);
       console.error("   ❌ Fehler:", error.message);
     } else {
       // Setze Rarities für alle 4 Spider
-      await supabase.from("nasamon").update({ rarity: "rare" }).eq("id", 102);
-      await supabase.from("nasamon").update({ rarity: "legendary" }).eq("id", 103);
-      await supabase.from("nasamon").update({ rarity: "common" }).eq("id", 104);
+      await supabase.from("pokiman").update({ rarity: "rare" }).eq("id", 102);
+      await supabase.from("pokiman").update({ rarity: "legendary" }).eq("id", 103);
+      await supabase.from("pokiman").update({ rarity: "common" }).eq("id", 104);
       console.log("   ✅ Rarity-Werte gesetzt!");
     }
   } catch (err) {
@@ -130,7 +130,7 @@ UPDATE public.nasamon SET available = false WHERE id IN (101, 102, 103, 104);
 
   console.log("\n✨ Schema-Anwendung abgeschlossen!");
   console.log("   Nach dem Ausführen der SQL-Befehle im Dashboard:");
-  console.log("   - 4 Cyber-Spinner erscheinen im Dex ausgegraut");
+  console.log("   - 4 Cyber-Pokemonr erscheinen im Dex ausgegraut");
   console.log("   - Durch Booster freischaltbar");
   console.log("   - user_unlocks Tabelle für Cloud-Sync bereit");
 }

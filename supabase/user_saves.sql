@@ -1,5 +1,5 @@
 -- ============================================================
---  SpiderZ  |  Cloud-Sync der Spielstände
+--  Pokiman  |  Cloud-Sync der Spielstände
 --  Tabelle: user_saves  (pro angemeldetem User genau eine Zeile)
 --  Anwenden: Supabase Dashboard → SQL Editor → komplett einfügen → Run.
 --  (Ergänzung zu schema.sql — nicht ersetzen!)

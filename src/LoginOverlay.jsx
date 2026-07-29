@@ -106,7 +106,7 @@ export default function LoginOverlay({ onClose }) {
         >✕</button>
 
         <div className="login-badge">// CLOUD_SYNC</div>
-        <h2 className="login-title">SPIDER<span>Z</span> CLOUD</h2>
+        <h2 className="login-title">POKI<span>MAN</span> CLOUD</h2>
         <p className="login-sub">
           Verbinde dein Team mit der Cloud — fang überall da weiter, wo du aufgehört hast.
         </p>

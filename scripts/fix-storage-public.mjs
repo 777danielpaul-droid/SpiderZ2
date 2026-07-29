@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * fix-storage-public.mjs
- * Macht den nasamon Storage-Bucket öffentlich zugänglich.
+ * Macht den pokiman Storage-Bucket öffentlich zugänglich.
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -22,10 +22,10 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 async function fixStorage() {
-  console.log("🔧 Mache nasamon Bucket öffentlich...\n");
+  console.log("🔧 Mache pokiman Bucket öffentlich...\n");
 
   // 1. Bucket auf public setzen
-  const { error: bucketError } = await supabase.storage.updateBucket("nasamon", {
+  const { error: bucketError } = await supabase.storage.updateBucket("pokiman", {
     public: true,
     allowedMimeTypes: ["image/png", "image/jpeg", "image/webp", "image/gif"],
     fileSizeLimit: 10485760, // 10MB
@@ -34,7 +34,7 @@ async function fixStorage() {
   if (bucketError) {
     console.error("❌ Bucket-Update-Fehler:", bucketError.message);
   } else {
-    console.log("✅ Bucket 'nasamon' ist jetzt public");
+    console.log("✅ Bucket 'pokiman' ist jetzt public");
   }
 
   // 2. Storage-Policy für öffentiges Lesen erstellen
@@ -45,25 +45,25 @@ async function fixStorage() {
   console.log(`
 -- Bucket öffentlich machen
 INSERT INTO storage.buckets (id, name, public)
-VALUES ('nasamon', 'nasamon', true)
+VALUES ('pokiman', 'pokiman', true)
 ON CONFLICT (id) DO UPDATE SET public = true;
 
 -- Öffentliche Les-Policy
-DROP POLICY IF EXISTS "public read nasamon objects" ON storage.objects;
-CREATE POLICY "public read nasamon objects"
+DROP POLICY IF EXISTS "public read pokiman objects" ON storage.objects;
+CREATE POLICY "public read pokiman objects"
   ON storage.objects FOR SELECT
-  USING (bucket_id = 'nasamon');
+  USING (bucket_id = 'pokiman');
 
 -- Schreibrecht nur für Service-Role
-DROP POLICY IF EXISTS "service write nasamon objects" ON storage.objects;
-CREATE POLICY "service write nasamon objects"
+DROP POLICY IF EXISTS "service write pokiman objects" ON storage.objects;
+CREATE POLICY "service write pokiman objects"
   ON storage.objects FOR INSERT TO service_role
-  WITH CHECK (bucket_id = 'nasamon');
+  WITH CHECK (bucket_id = 'pokiman');
   `);
 
   // 3. Teste ob die Bilder jetzt erreichbar sind
   console.log("\n🧪 Teste Bild-Zugriff...");
-  const testUrl = `${SUPABASE_URL}/storage/v1/object/public/nasamon/spider_101.jpg`;
+  const testUrl = `${SUPABASE_URL}/storage/v1/object/public/pokiman/spider_101.jpg`;
 
   try {
     const response = await fetch(testUrl);

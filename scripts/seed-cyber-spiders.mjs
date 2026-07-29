@@ -4,10 +4,10 @@
  * Lädt die 4 Spider-Bilder aus Downloads hoch und erstellt Spider-Einträge.
  *
  * Bilder:
- * 1. rich burgundy and deep blue...cybernetic spiders → "Cyber-Spinner"
- * 2. strong moody style...cybernetic spiders → "Schatten-Spinner"
- * 3. warm golden hour...cybernetic spiders → "Goldene Spinner"
- * 4. wet rainy scene...cybernetic spiders → "Regen-Spinner"
+ * 1. rich burgundy and deep blue...cybernetic spiders → "Cyber-Pokemonr"
+ * 2. strong moody style...cybernetic spiders → "Schatten-Pokemonr"
+ * 3. warm golden hour...cybernetic spiders → "Goldene Pokemonr"
+ * 4. wet rainy scene...cybernetic spiders → "Regen-Pokemonr"
  */
 
 import { createClient } from "@supabase/supabase-js";
@@ -33,8 +33,8 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 // Spider-Daten mit Bild-Pfaden
 const spiderData = [
   {
-    name_de: "Cyber-Spinner",
-    name_en: "Cyber Spinner",
+    name_de: "Cyber-Pokemonr",
+    name_en: "Cyber Pokemonr",
     localPath: "/Users/danielpaul/Downloads/rich burgundy and deep blue dynamic complex close-up photo composite, three identical cybernetic spiders, primary spider central, two smaller spiders flanking, bright green eyes, metallic damaged bodies, dripping luminescent green slime, ul.jpg",
     types: ["steel", "bug"],
     stats: [
@@ -51,8 +51,8 @@ const spiderData = [
     fileName: "spider_101.jpg",
   },
   {
-    name_de: "Schatten-Spinner",
-    name_en: "Shadow Spinner",
+    name_de: "Schatten-Pokemonr",
+    name_en: "Shadow Pokemonr",
     localPath: "/Users/danielpaul/Downloads/strong moody style, high-resolution stock photo, dynamic complex close-up photo composite, three identical cybernetic spiders, primary spider central, two smaller spiders flanking, bright green eyes, metallic damaged bodies, dripping lumine.jpg",
     types: ["dark", "steel"],
     stats: [
@@ -69,8 +69,8 @@ const spiderData = [
     fileName: "spider_102.jpg",
   },
   {
-    name_de: "Goldene Spinner",
-    name_en: "Golden Spinner",
+    name_de: "Goldene Pokemonr",
+    name_en: "Golden Pokemonr",
     localPath: "/Users/danielpaul/Downloads/warm golden hour light, classic black and white, dynamic complex close-up photo composite, three identical cybernetic spiders, primary spider central, two smaller spiders flanking, bright green eyes, metallic damaged bodies, dripping lumine.jpg",
     types: ["psychic", "steel"],
     stats: [
@@ -87,8 +87,8 @@ const spiderData = [
     fileName: "spider_103.jpg",
   },
   {
-    name_de: "Regen-Spinner",
-    name_en: "Rain Spinner",
+    name_de: "Regen-Pokemonr",
+    name_en: "Rain Pokemonr",
     localPath: "/Users/danielpaul/Downloads/wet rainy scene bold acrylic painting of three identical cybernetic spiders, central focus on a larger spider, two smaller ones flanking, bright green metallic eyes, damaged bodies, dripping green slime, ultra-detailed 8k, macro metal and b.jpg",
     types: ["water", "bug"],
     stats: [
@@ -107,7 +107,7 @@ const spiderData = [
 ];
 
 async function uploadAndSeed() {
-  console.log("🕷️  Starte Cyber-Spinner Seed...\n");
+  console.log("🕷️  Starte Cyber-Pokemonr Seed...\n");
 
   for (const spider of spiderData) {
     console.log(`📦 Verarbeite: ${spider.name_de}`);
@@ -131,12 +131,12 @@ async function uploadAndSeed() {
                         "application/octet-stream";
 
     // 3. Bild hochladen mit kurzem, sauberem Dateinamen
-    const storagePath = `nasamon/${spider.fileName}`;
+    const storagePath = `pokiman/${spider.fileName}`;
 
     console.log(`  📤 Lade hoch: ${storagePath} (${contentType})`);
 
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from("nasamon")
+      .from("pokiman")
       .upload(storagePath, fileBuffer, {
         contentType: contentType,
         upsert: true,
@@ -148,7 +148,7 @@ async function uploadAndSeed() {
       continue;
     }
 
-    const artworkUrl = `${SUPABASE_URL}/storage/v1/object/public/nasamon/${spider.fileName}`;
+    const artworkUrl = `${SUPABASE_URL}/storage/v1/object/public/pokiman/${spider.fileName}`;
     console.log(`  ✅ Bild hochgeladen: ${artworkUrl}`);
 
     // 4. Verifiziere Upload
@@ -164,7 +164,7 @@ async function uploadAndSeed() {
     }
 
     // 5. Spider in DB eintragen (ohne available/rarity Spalten, falls noch nicht vorhanden)
-    const { error: dbError } = await supabase.from("nasamon").upsert({
+    const { error: dbError } = await supabase.from("pokiman").upsert({
       id: spider.nextId,
       name_de: spider.name_de,
       name_en: spider.name_en,
@@ -184,7 +184,7 @@ async function uploadAndSeed() {
     }
   }
 
-  console.log("✨ Fertig! 4 neue Cyber-Spinner sind im Dex verfügbar.");
+  console.log("✨ Fertig! 4 neue Cyber-Pokemonr sind im Dex verfügbar.");
   console.log("   Nach dem Anwenden des SQL-Schemas erscheinen sie ausgegraut.");
   console.log("   Sie werden durch Booster freigeschaltet.");
 }

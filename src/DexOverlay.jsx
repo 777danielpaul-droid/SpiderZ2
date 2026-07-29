@@ -30,7 +30,7 @@ export default function DexOverlay({ onClose }) {
     (async () => {
       // 1) Alle Spider aus DB laden
       const { data: spiders, error: spidersErr } = await supabase
-        .from("nasamon")
+        .from("pokiman")
         .select("id, name_de, name_en, artwork, types, strength, rarity, available")
         .order("id");
 
@@ -60,7 +60,7 @@ export default function DexOverlay({ onClose }) {
     return () => { active = false; };
   }, [user]);
 
-  // Bestimme ob eine Spinne gefangen/gefreigeschaltet ist
+  // Bestimme ob eine Pokemon gefangen/gefreigeschaltet ist
   const isCaught = (id) => localDex.some((p) => p.id === id);
   const isUnlocked = (id) => unlockedIds.has(id);
   const isAvailable = (spider) => spider.available || isUnlocked(spider.id) || isCaught(spider.id);
@@ -78,7 +78,7 @@ export default function DexOverlay({ onClose }) {
       <span className="holo-glass" aria-hidden="true"></span>
       <div className="overlay-panel overlay-panel-wide" onClick={(e) => e.stopPropagation()}>
         <button type="button" className="overlay-close" onClick={onClose} aria-label="Zurück">←</button>
-        <h2 className="overlay-title">NASAMON-DEX</h2>
+        <h2 className="overlay-title">POKIMAN-DEX</h2>
 
         {loading ? (
           <p className="overlay-empty">Lade Spider…</p>

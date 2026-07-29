@@ -56,7 +56,7 @@ export default function BoosterOpen({ onClose, onUnlock }) {
 
       // 1. Prüfe ob locked Spider verfügbar sind
       const { data: lockedSpiders, error: fetchErr } = await supabase
-        .from("nasamon")
+        .from("pokiman")
         .select("id, name_de, name_en, artwork, types, rarity, available")
         .eq("available", false)
         .not("id", "in", `(${await getUserUnlockedIds(supabase, user.id)})`);
@@ -185,7 +185,7 @@ export default function BoosterOpen({ onClose, onUnlock }) {
             <div className="booster-pack-top"></div>
             <div className="booster-pack-foil"></div>
             <div className="booster-pack-logo">
-              <div className="booster-big">SPIDER<span>Z</span></div>
+              <div className="booster-big">POKI<span>MAN</span></div>
               <div className="booster-sub">BOOSTER</div>
             </div>
           </div>

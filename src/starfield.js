@@ -1,5 +1,5 @@
 // ============================================================
-// SpiderZ — Canvas-Starfield Engine (Holo, krass + scroll-reaktiv)
+// Pokiman — Canvas-Starfield Engine (Holo, krass + scroll-reaktiv)
 // ~8000 Sterne in 3 Parallax-Ebenen (weiss/neon/gold), Wrap-around,
 // Maus-Drift, Held-Sterne mit Glow. Canvas 2D, 60fps, DPR-aware.
 // ============================================================

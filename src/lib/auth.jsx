@@ -2,7 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback } from "rea
 import { getSupabase, isSupabaseReady } from "./supabase";
 
 /* ============================================================
-   Auth-Layer für SpiderZ (Google OAuth, Supabase Auth).
+   Auth-Layer für Pokiman (Google OAuth, Supabase Auth).
    - Keine Passwörter in der App, Google übernimmt die Identität.
    - Session bleibt nach Reload via onAuthStateChange erhalten.
    - Graceful: ohne Supabase-Credentials -> user === null, kein Crash.

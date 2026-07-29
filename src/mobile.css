@@ -244,7 +244,7 @@
   .arena-battles { display: flex !important; flex-direction: column !important; gap: 18px !important; }
   .vs-row {
     display: flex !important;
-    flex-direction: column !important;   /* eigene Spinne über Gegner */
+    flex-direction: column !important;   /* eigene Pokemon über Gegner */
     align-items: center !important;
     gap: 8px !important;
     text-align: center !important;

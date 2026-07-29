@@ -1,9 +1,8 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// https://vite.dev/config/
-// base = "/SpiderZ/" damit Assets unter github.io/SpiderZ/assets/ laden (Sub-Pfad-Deploy)
+// Subpath-Deploy für GitHub Pages: /Pokiman/
 export default defineConfig({
-  base: '/SpiderZ/',
+  base: '/Pokiman/',
   plugins: [react()],
 })

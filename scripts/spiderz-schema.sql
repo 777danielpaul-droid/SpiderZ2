@@ -1,10 +1,10 @@
 -- ============================================================
--- SpiderZ Cloud-Sync Schema
+-- Pokiman Cloud-Sync Schema
 -- Komplettes Setup für Supabase SQL Editor
 -- ============================================================
 
--- 1) Neue Spalten auf nasamon
-ALTER TABLE public.nasamon
+-- 1) Neue Spalten auf pokiman
+ALTER TABLE public.pokiman
   ADD COLUMN IF NOT EXISTS rarity    text      NOT NULL DEFAULT 'common',
   ADD COLUMN IF NOT EXISTS available boolean   NOT NULL DEFAULT true;
 
@@ -13,7 +13,7 @@ DROP TABLE IF EXISTS public.user_unlocks CASCADE;
 
 CREATE TABLE public.user_unlocks (
   user_id      uuid      NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  spider_id    integer   NOT NULL REFERENCES nasamon(id) ON DELETE CASCADE,
+  spider_id    integer   NOT NULL REFERENCES pokiman(id) ON DELETE CASCADE,
   unlocked_at  timestamptz NOT NULL DEFAULT now(),
   PRIMARY KEY (user_id, spider_id)
 );
@@ -39,22 +39,22 @@ CREATE POLICY "user deletes own unlocks"
   USING (auth.uid() = user_id);
 
 -- 3) Neue Spider als locked markieren
-UPDATE public.nasamon SET available = false WHERE id IN (101, 102, 103, 104);
+UPDATE public.pokiman SET available = false WHERE id IN (101, 102, 103, 104);
 
 -- 4) Rarities setzen
-UPDATE public.nasamon SET rarity = 'rare' WHERE id = 101;
-UPDATE public.nasamon SET rarity = 'rare' WHERE id = 102;
-UPDATE public.nasamon SET rarity = 'legendary' WHERE id = 103;
-UPDATE public.nasamon SET rarity = 'common' WHERE id = 104;
+UPDATE public.pokiman SET rarity = 'rare' WHERE id = 101;
+UPDATE public.pokiman SET rarity = 'rare' WHERE id = 102;
+UPDATE public.pokiman SET rarity = 'legendary' WHERE id = 103;
+UPDATE public.pokiman SET rarity = 'common' WHERE id = 104;
 
--- 5) Storage-Policy für öffentlichen Zugriff auf nasamon Bucket
-DROP POLICY IF EXISTS "public read nasamon objects" ON storage.objects;
-CREATE POLICY "public read nasamon objects"
+-- 5) Storage-Policy für öffentlichen Zugriff auf pokiman Bucket
+DROP POLICY IF EXISTS "public read pokiman objects" ON storage.objects;
+CREATE POLICY "public read pokiman objects"
   ON storage.objects FOR SELECT
-  USING (bucket_id = 'nasamon');
+  USING (bucket_id = 'pokiman');
 
 -- Bucket auf public setzen
-UPDATE storage.buckets SET public = true WHERE id = 'nasamon';
+UPDATE storage.buckets SET public = true WHERE id = 'pokiman';
 
 -- 6) user_saves Tabelle erstellen (falls noch nicht vorhanden)
 --    mit allen Spalten inkl. steroids + collectors

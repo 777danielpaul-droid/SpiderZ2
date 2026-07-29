@@ -31,13 +31,13 @@ const supabase = createClient(SUPABASE_URL, SERVICE_ROLE_KEY, {
 });
 
 // ===== NEUE SPIDER HIER DEFINIEREN =====
-// Jede Spinne braucht: id, name_de, name_en, artwork (Storage-URL), types, stats, strength, height, weight, rarity
+// Jede Pokemon braucht: id, name_de, name_en, artwork (Storage-URL), types, stats, strength, height, weight, rarity
 const newSpiders = [
   {
     id: 101,
-    name_de: "Nacht-Spinne",
+    name_de: "Nacht-Pokemon",
     name_en: "Night Spider",
-    artwork: `${SUPABASE_URL}/storage/v1/object/public/nasamon/spider_night.png`,
+    artwork: `${SUPABASE_URL}/storage/v1/object/public/pokiman/spider_night.png`,
     types: ["dark", "bug"],
     stats: [
       { name: "hp", value: 60 },
@@ -52,9 +52,9 @@ const newSpiders = [
   },
   {
     id: 102,
-    name_de: "Licht-Spinne",
+    name_de: "Licht-Pokemon",
     name_en: "Light Spider",
-    artwork: `${SUPABASE_URL}/storage/v1/object/public/nasamon/spider_light.png`,
+    artwork: `${SUPABASE_URL}/storage/v1/object/public/pokiman/spider_light.png`,
     types: ["fairy", "psychic"],
     stats: [
       { name: "hp", value: 70 },
@@ -69,9 +69,9 @@ const newSpiders = [
   },
   {
     id: 103,
-    name_de: "Berg-Spinne",
+    name_de: "Berg-Pokemon",
     name_en: "Mountain Spider",
-    artwork: `${SUPABASE_URL}/storage/v1/object/public/nasamon/spider_mountain.png`,
+    artwork: `${SUPABASE_URL}/storage/v1/object/public/pokiman/spider_mountain.png`,
     types: ["rock", "ground"],
     stats: [
       { name: "hp", value: 90 },
@@ -91,7 +91,7 @@ async function seed() {
   console.log(`🕷️  Seeding ${newSpiders.length} neue Spider...`);
 
   for (const spider of newSpiders) {
-    const { error } = await supabase.from("nasamon").upsert({
+    const { error } = await supabase.from("pokiman").upsert({
       id: spider.id,
       name_de: spider.name_de,
       name_en: spider.name_en,

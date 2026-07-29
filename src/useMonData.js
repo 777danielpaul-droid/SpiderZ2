@@ -1,153 +1,183 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+// Pokemon-Fetch-Layer: PokéAPI, Kanto 1..151, clientseitig gecacht.
+import { useState, useEffect, useRef, useCallback } from "react";
 import { TOTAL_MON } from "./monList";
-import { supabase, isSupabaseReady } from "./lib/supabase";
 
-// In-Memory-Cache: verhindert Repeated-Fetch bei HMR/Reload des gleichen Sets.
-const cache = new Map(); // id -> nasamon datensatz
+const API = "https://pokeapi.co/api/v2";
+const CACHE_KEY = "pokiman_pokemon_cache_v1";
+const CACHE_TTL_MS = 1000 * 60 * 60;
 
-// Wenn keine Supabase-Credentials da sind (z.B. Pages ohne Secrets),
-// direkt einen klaren Fehler liefern statt auf null.from() zu crashen.
-const NO_SUPABASE = "SpiderZ braucht eine Supabase-Verbindung. Bitte .env konfigurieren.";
-
-// Gesamtzahl der eigenen Monster (aus der DB; hier als Obergrenze für randomIds).
-const MAX_NASAMON = 18;
-
-function shuffle(arr) {
-  const a = arr.slice();
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+function readCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (parsed?.ts && Date.now() - parsed.ts < CACHE_TTL_MS) return parsed.data;
+  } catch {
+    // ignore corrupt cache
   }
-  return a;
+  return null;
 }
 
-// Liefert einen zufälligen Datensatz aus dem Cache (oder null).
-function getCached(id) {
-  return cache.get(id) || null;
-}
-
-async function fetchNasaMon(id) {
-  if (!isSupabaseReady) throw new Error(NO_SUPABASE);
-  if (cache.has(id)) return cache.get(id);
-  const { data, error } = await supabase
-    .from("nasamon")
-    .select("*")
-    .eq("id", id)
-    .single();
-  if (error) throw new Error(`nasamon ${id}: ${error.message}`);
-  cache.set(id, data);
-  return data;
-}
-
-// count zufällige eindeutige IDs aus dem gesamten NasaMon-Dex.
-function randomIds(count = TOTAL_MON, max = MAX_NASAMON) {
-  return shuffle(Array.from({ length: max }, (_, i) => i + 1)).slice(0, count);
-}
-
-// Such-Query -> gültige NasaMon-ID auflösen.
-// Akzeptiert: reine Zahl (1..18) ODER englischer Name (name_en).
-async function resolveQuery(raw) {
-  const q = String(raw).trim().toLowerCase();
-  if (!q) throw new Error("Bitte eine Nummer oder einen Namen eingeben.");
-
-  if (/^\d+$/.test(q)) {
-    const id = parseInt(q, 10);
-    if (id < 1 || id > MAX_NASAMON) {
-      throw new Error(`Nummer außerhalb des Bereichs 1–${MAX_NASAMON}.`);
-    }
-    return id;
+function writeCache(data) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), data }));
+  } catch {
+    // ignore quota errors
   }
-
-  // Name-Suche: Teilnamen via Wildcards (z.B. "arach" -> "arachnex").
-  // Bester Treffer = kuerzester Name (exakteste Uebereinstimmung).
-  if (!isSupabaseReady) throw new Error(NO_SUPABASE);
-  const { data, error } = await supabase
-    .from("nasamon")
-    .select("id, name_en")
-    .ilike("name_en", `%${q}%`)
-    .limit(5);
-  if (error) throw new Error(`Suche fehlgeschlagen: ${error.message}`);
-  if (data && data.length) {
-    const best = data.slice().sort((a, b) => a.name_en.length - b.name_en.length)[0];
-    return best.id;
-  }
-  throw new Error(`Nicht gefunden – Nummer (1–${MAX_NASAMON}) oder Name (z.B. arachnex, spider, glow).`);
 }
 
-export function useMonData(count = TOTAL_MON) {
-  const [data, setData] = useState(null);
-  const [error, setError] = useState(null);
-  const [progress, setProgress] = useState(0);
-  // Einzel-Suche (Header): { loading, result, error }
-  const [search, setSearch] = useState({ loading: false, result: null, error: null });
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Fetch failed: ${url} (${res.status})`);
+  return res.json();
+}
 
-  // IDs einmalig pro Mount ziehen (nicht bei jedem Render neu).
-  const idsRef = useRef(null);
-  if (idsRef.current === null) idsRef.current = randomIds(count);
+async function loadPokemonDetail(id) {
+  return fetchJSON(`${API}/pokemon/${id}`);
+}
 
-  const loadIds = useCallback((ids) => {
-    let cancelled = false;
-    setError(null);
-    setProgress(0);
-    setData(null);
-    (async () => {
-      try {
-        const results = [];
-        for (let i = 0; i < ids.length; i++) {
-          const mon = await fetchNasaMon(ids[i]);
-          // Shape 1:1 wie vorher: { id, name_en, name_de, artwork, types, strength, stats, height, weight }
-          results.push(mon);
-          if (!cancelled) setProgress(Math.round(((i + 1) / ids.length) * 100));
-        }
-        if (!cancelled) setData(results);
-      } catch (e) {
-        if (!cancelled) setError(e.message);
+async function loadPokemonSpecies(id) {
+  return fetchJSON(`${API}/pokemon-species/${id}`);
+}
+
+async function loadEvolutionChain(url) {
+  const data = await fetchJSON(url);
+  const chain = [];
+  let current = data.chain;
+  while (current) {
+    const speciesId = Number(String(current.species.url).split("/").filter(Boolean).at(-1));
+    chain.push({ name: current.species.name, id: speciesId });
+    current = current.evolves_to[0] || null;
+  }
+  return chain;
+}
+
+export async function fetchAllPokemon() {
+  const cached = readCache();
+  if (cached) return cached;
+
+  const results = [];
+  for (let id = 1; id <= TOTAL_MON; id++) {
+    try {
+      const [detail, species] = await Promise.all([
+        loadPokemonDetail(id),
+        loadPokemonSpecies(id).catch(() => null),
+      ]);
+
+      const mainType = detail.types?.[0]?.type?.name || "normal";
+      const types = (detail.types || []).map((t) => t.type.name);
+
+      const stats = (detail.stats || []).map((s) => ({
+        name: s.stat.name,
+        value: s.base_stat,
+        effort: s.effort,
+      }));
+
+      const sprites = detail.sprites || {};
+      const artwork =
+        sprites?.other?.["official-artwork"]?.front_default ||
+        sprites?.other?.home?.front_default ||
+        sprites?.front_default ||
+        "";
+
+      const nameEntry = (species?.names || []).find((n) => n.language.name === "de");
+      const name_en = detail.name;
+      const name_de = nameEntry?.name || detail.name;
+
+      let evolutionChain = null;
+      if (species?.evolution_chain?.url) {
+        evolutionChain = await loadEvolutionChain(species.evolution_chain.url).catch(() => null);
       }
-    })();
-    return () => { cancelled = true; };
-  }, []);
 
-  // Neue Runde: frische zufaellige IDs ziehen + neu laden.
-  const reset = useCallback(() => {
-    const ids = randomIds(count);
-    idsRef.current = ids;
-    loadIds(ids);
-  }, [count, loadIds]);
+      results.push({
+        id: detail.id,
+        name: detail.name,
+        name_de,
+        name_en,
+        types,
+        mainType,
+        strength: stats.find((s) => s.name === "attack")?.value || 0,
+        hp: stats.find((s) => s.name === "hp")?.value || 0,
+        defense: stats.find((s) => s.name === "defense")?.value || 0,
+        speed: stats.find((s) => s.name === "speed")?.value || 0,
+        stats,
+        artwork,
+        sprite: sprites?.front_default || "",
+        speciesUrl: species?.evolution_chain?.url || "",
+        evolutionChain,
+      });
+    } catch (e) {
+      console.warn("[pokiman] Pokemon", id, "failed:", e);
+    }
+  }
 
-  useEffect(() => loadIds(idsRef.current), [loadIds]);
+  writeCache(results);
+  return results;
+}
 
-  // Alle 18 Spider (unabhängig vom 3er-Team) fuer die Arena/RNG-Gegner.
-  const [allData, setAllData] = useState(null);
+export function useMonData(limit) {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [search, setSearch] = useState({ query: "", result: null, loading: false, error: null });
+
+  const allData = data;
+  const searchRef = useRef({ query: "", result: null, loading: false, error: null });
+
+  // Load all Pokemon once
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
-        const all = [];
-        for (let id = 1; id <= MAX_NASAMON; id++) {
-          all.push(await fetchNasaMon(id));
+        const all = await fetchAllPokemon();
+        if (!cancelled) {
+          setData(all || []);
+          setError(null);
         }
-        if (!cancelled) setAllData(all);
-      } catch {
-        /* nicht kritisch fuer das Hauptspiel */
+      } catch (e) {
+        if (!cancelled) setError(e?.message || "Fehler beim Laden");
+      } finally {
+        if (!cancelled) setLoading(false);
       }
     })();
     return () => { cancelled = true; };
   }, []);
 
-  const runSearch = useCallback(async (query) => {
-    setSearch({ loading: true, result: null, error: null });
-    try {
-      const id = await resolveQuery(query);
-      const mon = await fetchNasaMon(id);
-      setSearch({ loading: false, result: mon, error: null });
-    } catch (e) {
-      setSearch({ loading: false, result: null, error: e.message });
-    }
-  }, []);
+  const runSearch = useCallback((q) => {
+    const query = (q || "").trim();
+    setSearch((s) => ({ ...s, loading: Boolean(query), error: null, result: null }));
+    setTimeout(() => {
+      if (!query) {
+        setSearch({ query: "", result: null, loading: false, error: null });
+        return;
+      }
+      try {
+        const qNum = Number(query);
+        const qStr = String(query).toLowerCase();
+        let result = null;
+        if (Number.isInteger(qNum) && qNum > 0) {
+          result = data.find((p) => p.id === qNum) || null;
+        }
+        result = result || data.find((p) => p.name === qStr || String(p.id) === qStr) || null;
+        result = result || data.find((p) => (p.name_de || "").toLowerCase().includes(qStr)) || null;
+        setSearch({ query, result, loading: false, error: null });
+      } catch {
+        setSearch({ query, result: null, loading: false, error: "Suche fehlgeschlagen" });
+      }
+    }, 120);
+  }, [data]);
 
-  const clearSearch = useCallback(() => {
-    setSearch({ loading: false, result: null, error: null });
-  }, []);
+  const clearSearch = useCallback(() => setSearch({ query: "", result: null, loading: false, error: null }), []);
+  const reset = useCallback(() => { /* no-op to keep compat */ }, []);
 
-  return { data, error, progress, search, runSearch, clearSearch, reset, allData };
+  return {
+    data: (search.result ? [search.result] : data.slice(0, limit)),
+    error,
+    search,
+    runSearch,
+    clearSearch,
+    reset,
+    allData,
+    loading,
+  };
 }
