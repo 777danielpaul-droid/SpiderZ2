@@ -115,6 +115,15 @@ export async function fetchAllPokemon() {
   return results;
 }
 
+function shuffleArray(input) {
+  const arr = Array.isArray(input) ? [...input] : [];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
 export function useMonData(limit) {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -124,14 +133,14 @@ export function useMonData(limit) {
   const allData = data;
   const searchRef = useRef({ query: "", result: null, loading: false, error: null });
 
-  // Load all Pokemon once
   useEffect(() => {
     let cancelled = false;
     (async () => {
       try {
         const all = await fetchAllPokemon();
         if (!cancelled) {
-          setData(all || []);
+          const shuffled = shuffleArray(all || []);
+          setData(shuffled);
           setError(null);
         }
       } catch (e) {
@@ -156,19 +165,25 @@ export function useMonData(limit) {
         const qStr = String(query).toLowerCase();
         let result = null;
         if (Number.isInteger(qNum) && qNum > 0) {
-          result = data.find((p) => p.id === qNum) || null;
+          result = allData.find((p) => p.id === qNum) || null;
         }
-        result = result || data.find((p) => p.name === qStr || String(p.id) === qStr) || null;
-        result = result || data.find((p) => (p.name_de || "").toLowerCase().includes(qStr)) || null;
+        result = result || allData.find((p) => p.name === qStr || String(p.id) === qStr) || null;
+        result = result || allData.find((p) => (p.name_de || "").toLowerCase().includes(qStr)) || null;
         setSearch({ query, result, loading: false, error: null });
       } catch {
         setSearch({ query, result: null, loading: false, error: "Suche fehlgeschlagen" });
       }
     }, 120);
-  }, [data]);
+  }, [allData]);
 
   const clearSearch = useCallback(() => setSearch({ query: "", result: null, loading: false, error: null }), []);
-  const reset = useCallback(() => { /* no-op to keep compat */ }, []);
+  const reset = useCallback(() => {
+    setData((prev) => {
+      const arr = Array.isArray(prev) ? [...prev] : [];
+      const shuffled = shuffleArray(arr);
+      return shuffled;
+    });
+  }, []);
 
   return {
     data: (search.result ? [search.result] : data.slice(0, limit)),
