@@ -38,7 +38,9 @@ export default function App() {
   const toggleHud = useCallback(() => setHudCollapsed((c) => !c), []);
   const [headerCollapsed, setHeaderCollapsed] = useState(false); // Mobile: Header nach Intro auto-einfahren
   const toggleHeader = useCallback(() => setHeaderCollapsed((c) => !c), []);
+  const [scrubReady, setScrubReady] = useState(false);
   const handleScrubReady = useCallback(() => {
+    setScrubReady(true);
     // Nur mobil: nach der Frame2Frame-Animation automatisch einfahren.
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
       const t = setTimeout(() => setHeaderCollapsed(true), 2600);
