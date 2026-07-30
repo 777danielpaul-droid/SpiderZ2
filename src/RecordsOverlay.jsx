@@ -27,7 +27,7 @@ export default function RecordsOverlay({ onClose, onOpenDex }) {
         </div>
 
         <button type="button" className="overlay-cta" onClick={onOpenDex}>
-          ZUM POKIMAN-DEX →
+          ZUM NASAMON-DEX →
         </button>
       </div>
     </div>

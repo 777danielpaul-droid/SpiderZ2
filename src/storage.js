@@ -1,7 +1,7 @@
 // Persistente Sammlung + Rekorde (localStorage, kein Backend).
-const DEX_KEY = "pokiman_dex";            // Array aller je gefangenen Monster (dedupe nach id)
-const BEST_KEY = "pokiman_bestTeamStrength"; // hoechste Team-Staerke einer Runde
-const STEROIDS_KEY = "pokiman_steroids";     // gesammelte Steroide (je 1 = +100 Stärke im Kampf)
+const DEX_KEY = "nasamon_dex";            // Array aller je gefangenen Monster (dedupe nach id)
+const BEST_KEY = "nasamon_bestTeamStrength"; // hoechste Team-Staerke einer Runde
+const STEROIDS_KEY = "nasamon_steroids";     // gesammelte Steroide (je 1 = +100 Stärke im Kampf)
 
 function safeParse(raw, fallback) {
   try {
@@ -65,11 +65,11 @@ export function useSteroid() {
 // Collector-Items verwalten
 export function loadCollectors() {
   if (typeof localStorage === "undefined") return 0;
-  const v = parseInt(localStorage.getItem("pokiman_collectors") || "0", 10);
+  const v = parseInt(localStorage.getItem("nasamon_collectors") || "0", 10);
   return Number.isFinite(v) ? v : 0;
 }
 
 export function saveCollectors(value) {
   if (typeof localStorage === "undefined") return;
-  localStorage.setItem("pokiman_collectors", String(value));
+  localStorage.setItem("nasamon_collectors", String(value));
 }

@@ -38,9 +38,7 @@ export default function App() {
   const toggleHud = useCallback(() => setHudCollapsed((c) => !c), []);
   const [headerCollapsed, setHeaderCollapsed] = useState(false); // Mobile: Header nach Intro auto-einfahren
   const toggleHeader = useCallback(() => setHeaderCollapsed((c) => !c), []);
-  const [scrubReady, setScrubReady] = useState(false);
   const handleScrubReady = useCallback(() => {
-    setScrubReady(true);
     // Nur mobil: nach der Frame2Frame-Animation automatisch einfahren.
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
       const t = setTimeout(() => setHeaderCollapsed(true), 2600);
@@ -79,9 +77,9 @@ export default function App() {
     saveBestTeamStrength(teamStrength);
   }, [data, caughtIds]);
 
-  // ---- LEVEL-PROGRESSION: Level 1 = 3 Pokemon, Level 2 = 2 Pokemon, Level 3 = 1 Pokemon ----
+  // ---- LEVEL-PROGRESSION: Level 1 = 3 Spinnen, Level 2 = 2 Spinnen, Level 3 = 1 Spinne ----
   const [level, setLevel] = useState(1);
-  const LEVEL_TEAM_SIZE = level === 1 ? 3 : level === 2 ? 2 : 1;
+  const LEVEL_TEAM_SIZE = level === 1 ? TOTAL_MON : level === 2 ? 2 : 1; // Level 3: nur 1 Spinne
   const [levelTransition, setLevelTransition] = useState(false); // LEVEL COMPLETE Screen
 
   // ---- STEROIDE: Inventar-State (live HUD-Update bei Booster-Vial) ----
@@ -89,7 +87,7 @@ export default function App() {
 
   // ---- VIAL / STEROIDE: einmalig nutzbar, blockiert Arena bis vergeben ----
   const [vialTaken, setVialTaken] = useState(false);   // Vial aufgenommen (armed)
-  const [boostedId, setBoostedId] = useState(null);    // Pokemon mit +100 (null = noch nicht vergeben)
+  const [boostedId, setBoostedId] = useState(null);    // Spinne mit +100 (null = noch nicht vergeben)
   const [revealed, setRevealed] = useState(false);     // Team-Reveal abgeschlossen -> Vial darf erscheinen
   const [loreOpen, setLoreOpen] = useState(false);     // Lore-Modal (Chronik)
   const [boosterOpen, setBoosterOpen] = useState(false); // Booster-Screen nach Arena-Sieg
@@ -113,7 +111,7 @@ export default function App() {
   }, [allData, caughtIds, boostedId, LEVEL_TEAM_SIZE]);
 
   // Arena-Matches (1:1 in Reihenfolge) + Gesamt-Ergebnis.
-  // Geboostete Pokemon bekommt +100 Stärke vor dem Match.
+  // Geboostete Spinne bekommt +100 Stärke vor dem Match.
   // Level 3: Gegner bekommt +200 Stärke (2 Steroid-Vials).
   const caughtTeam = data ? data.filter((p) => caughtIds.includes(p.id)) : [];
   const boostedTeam = caughtTeam.map((p) =>
@@ -154,9 +152,9 @@ export default function App() {
 
   // Booster-Screen erst, wenn die Arena-Ergebnisse durchgescrollt wurden (nicht direkt bei Sieg).
   // Sieg-Bedingung:
-  //   Level 1 (3 Pokemon): 2/3 Siege nötig
-  //   Level 2 (2 Pokemon): 2/2 Siege nötig (beide müssen gewinnen)
-  //   Level 3 (1 Pokemon): 1/1 Sieg nötig
+  //   Level 1 (3 Spinnen): 2/3 Siege nötig
+  //   Level 2 (2 Spinnen): 2/2 Siege nötig (beide müssen gewinnen)
+  //   Level 3 (1 Spinne): 1/1 Sieg nötig
   const REQUIRED_WINS = level === 2 ? LEVEL_TEAM_SIZE : Math.ceil(LEVEL_TEAM_SIZE / 2);
   const boostShown = useRef(false);
   console.log(`[debug] level=${level}, LEVEL_TEAM_SIZE=${LEVEL_TEAM_SIZE}, total=${TOTAL_MON}, REQUIRED_WINS=${REQUIRED_WINS}`);
@@ -203,7 +201,7 @@ export default function App() {
   const arenaEndRef = useRef(null);  // Arena-Ergebnis -> Booster-Screen nach Durchscrollen
   const teamRefs = useRef({});       // DOM-Refs der Team-Karten
   const revealPlayed = useRef(false); // Finale nur einmal abspielen
-  const logoRef = useRef(null);      // Pokiman-Wortmarke (Fade-in beim 1. Scroll)
+  const logoRef = useRef(null);      // SpiderZ-Wortmarke (Fade-in beim 1. Scroll)
 
   // "Weiter"-Button: smooth zum naechsten mon (oder ans Team-Ende).
   // Erst nach dem ersten gefangenen mon nutzbar (vorher muss gescrollt werden).
@@ -332,7 +330,7 @@ export default function App() {
     }
 
     // 3) Jede Karte einzeln nacheinander revealed (grosser Stagger =
-    //    Spotlight-Effekt: eine Pokemon nach der anderen kommt in den Fokus)
+    //    Spotlight-Effekt: eine Spinne nach der anderen kommt in den Fokus)
     tl.to(cards, {
       opacity: 1, scale: 1, y: 0, rotateZ: 0,
       filter: "blur(0px) brightness(1)",
@@ -441,10 +439,10 @@ export default function App() {
       <header className={`site-header${headerCollapsed ? " header-collapsed" : ""}`} ref={headerRef}>
       <span className="holo-glass" aria-hidden="true"></span>
         {/* Logo oben links: Klick scrollt zum Seitenanfang */}
-        <a className="site-logo" href="#pokiman" onClick={(e) => { e.preventDefault(); scrollToId("pokiman"); }} aria-label="Pokiman - Zum Seitenanfang">POKI<span>MAN</span></a>
+        <a className="site-logo" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); }} aria-label="SpiderZ - Zum Seitenanfang">SPIDER<span>Z</span></a>
         <nav className="site-nav">
-          {/* Anker "Pokiman" öffnet direkt den POKIMAN-Dex */}
-          <a className="site-link" href="#pokiman" onClick={(e) => { e.preventDefault(); scrollToId("pokiman"); setHudView("dex"); }}>Pokiman</a>
+          {/* Anker "SpiderZ" öffnet direkt den NASAMON-Dex */}
+          <a className="site-link" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); setHudView("dex"); }}>SpiderZ</a>
           <a className="site-link" href="#story" onClick={(e) => { e.preventDefault(); scrollToId("story"); }}>Spielregeln</a>
           <button type="button" className="site-link lore-link" onClick={() => setLoreOpen(true)}>Lore</button>
           <a className="site-link" href={import.meta.env.BASE_URL + "datenschutz.html"} target="_blank" rel="noopener">Datenschutz</a>
@@ -466,7 +464,7 @@ export default function App() {
             placeholder="Nr (1–18) / Name"
             value={query || ""}
             onChange={(e) => setQuery(e.target.value)}
-            aria-label="Pokemon suchen"
+            aria-label="Spider-Monster suchen"
           />
           <button className="header-search-btn" type="submit" title="Suchen">
             SUCHEN
@@ -558,7 +556,7 @@ export default function App() {
         <LoginOverlay onClose={() => setLoginOpen(false)} />
       )}
 
-      <header className={`hero`} ref={heroRef} id="pokiman">
+      <header className={`hero`} ref={heroRef} id="spiderz">
         <ScrubSection hintHidden={caughtIds.length > 0} onReady={handleScrubReady}>
         </ScrubSection>
       </header>
@@ -567,10 +565,10 @@ export default function App() {
       <section className="story" id="story">
         <div className="story-grid">
           <div className="story-tag">// DOSSIER_001</div>
-          <h2 className="story-title">DIE POKEMON-SCHWARME</h2>
+          <h2 className="story-title">DIE SPINNEN-SCHWARME</h2>
           <p className="story-body">
-            Tief in den Neonschächten von New-Kanto erwachten die <strong>Pokiman</strong> —
-            mutierte Pokemon, deren Typen in drei Fraktionen kollidieren:
+            Tief in den Neonschächten von New-Arachne erwachten die <strong>SpiderZ</strong> —
+            mutierte Arachniden, deren Typen in drei Fraktionen kollidieren:
             <span className="story-hl gift">GIFT</span>,
             <span className="story-hl staerke">STÄRKE</span>,
             <span className="story-hl verteidigung">VERTEIDIGUNG</span>.
@@ -601,14 +599,14 @@ export default function App() {
           className="lore-modal"
           role="dialog"
           aria-modal="true"
-          aria-label="Die Chronik von Professor Kanto"
+          aria-label="Die Chronik von Paaway Kaka"
           onClick={(e) => { if (e.target === e.currentTarget) setLoreOpen(false); }}
         >
           <span className="holo-glass" aria-hidden="true"></span>
           <article className="lore-scroll">
             <div className="lore-ornament">❧ CHRONIK ❧</div>
             <div className="lore-rule" />
-            <h1 className="lore-title">Die Chronik von Professor Kanto</h1>
+            <h1 className="lore-title">Die Chronik von Paaway Kaka</h1>
             <div className="lore-sub">— der eiserne Kodex auf dem Bambus —</div>
 
             <p>Auf den ländlichen Pfaden der Philippinen erhebt sich seit Generationen ein ungeschriebenes Gesetz: das der Arena auf dem Bambusstab. Dies ist keine Sage aus alten Mythen, sondern ein überliefertes Ritual der Jugend – eine reale Tradition, in der die Natur selbst zur Bühne wird. Manche Kids nennen sie scherzhaft ihre TaschenMonster.</p>
@@ -621,13 +619,13 @@ export default function App() {
             <div className="lore-video">
               <iframe
                 src="https://www.youtube.com/embed/xg6dom7xZ1Y?start=198"
-                title="Professor Kanto — Feldaufnahme"
+                title="Paaway Kaka — Feldaufnahme"
                 loading="lazy"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowFullScreen
               />
             </div>
-            <div className="lore-video-cap">Feldaufnahme · Professor Kanto</div>
+            <div className="lore-video-cap">Feldaufnahme · Paaway Kaka</div>
           </article>
           <button type="button" className="lore-close" onClick={() => setLoreOpen(false)} aria-label="Lore schließen">✕</button>
         </div>
@@ -707,7 +705,7 @@ export default function App() {
           {revealed && data && caughtIds.length >= LEVEL_TEAM_SIZE && boostedId == null && (
             <section className="vial-stage">
               <h2 className="vial-title">STEROID-VIAL</h2>
-              <p className="vial-sub">Nimm das Vial und verpasse EINER deiner Pokemon +100 Stärke.</p>
+              <p className="vial-sub">Nimm das Vial und verpasse EINER deiner Spinnen +100 Stärke.</p>
               <div
                 className={`vial ${vialTaken ? "taken" : ""}`}
                 role="button"
@@ -722,7 +720,7 @@ export default function App() {
               </div>
               <p className="vial-hint">
                 {vialTaken
-                  ? "Wähle jetzt eine deiner Pokemon, um sie zu boosten."
+                  ? "Wähle jetzt eine deiner Spinnen, um sie zu boosten."
                   : "Klicke das Vial, um es aufzunehmen."}
               </p>
             </section>
@@ -866,7 +864,7 @@ export default function App() {
                     scrollToId("story");
                   }}
                 >
-                  ▶ LEVEL {level + 1} ({level === 2 ? "1 Pokemon + Steroid-Boost" : level === 1 ? "2 Pokemon" : "3 Pokemon"})
+                  ▶ LEVEL {level + 1} ({level === 2 ? "1 Spinne + Steroid-Boost" : level === 1 ? "2 Spinnen" : "3 Spinnen"})
                 </button>
               </div>
             </div>

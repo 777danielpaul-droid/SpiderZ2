@@ -9,8 +9,8 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
  *   gekoppelt an die Scroll-Position (ScrollTrigger + scrub).
  * - Mobil-optimiert: Frames nur bei Aenderung auf Canvas gezeichnet,
  *   rAF-gedrosselt, JPEG-Sequence statt Video (kein Decoding-Jank).
- * - Framequelle: Pokemon-Animation (frame_000..frame_192 aus
- *   pokiman/spider_full_body_16x9.mp4 extrahiert).
+ * - Framequelle: Spider-Animation (frame_000..frame_192 aus
+ *   NasaMon/spider_full_body_16x9.mp4 extrahiert).
  */
 const FRAME_COUNT = 193;            // Spider-Video: 193 Frames (24fps, 8.1s)
 const FRAME_BASE = import.meta.env.BASE_URL + "scrub/frame_";

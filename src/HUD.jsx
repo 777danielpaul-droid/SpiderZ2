@@ -4,7 +4,7 @@ import "./hud.css";
 import { useSound, SFX } from "./useSound";
 
 /**
- * Horizontales Cyberpunk-HUD für Pokiman (unten, mittig).
+ * Horizontales Cyberpunk-HUD für SpiderZ (unten, mittig).
  *
  * Layout (horizontal nebeneinander, je Modul = Spalte Label/Readout):
  *   SYSTEM · TEAM-STÄRKE (+LV) · GEFANGEN · SCAN · AKTIVES TEAM
@@ -222,7 +222,7 @@ export default function HUD({ total, level: appLevel, caughtIds, data, scrollFil
 
         <div className="hud-divider" />
 
-        {/* SUCHE (pokiman-DB) - wurde in Header verlegt */}
+        {/* SUCHE (NasaMon-DB) - wurde in Header verlegt */}
       </div>
 
       {/* Integrierte Bottom-Leiste: einziger Toggle-Trigger (Mobile) */}

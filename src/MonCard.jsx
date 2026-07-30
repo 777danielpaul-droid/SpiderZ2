@@ -5,6 +5,14 @@ import { TYPE_COLORS } from "./monList";
 
 gsap.registerPlugin(ScrollTrigger);
 
+/**
+ * 10x Scroll-Transformation:
+ * Jede Section ist extra HOCH (CARD_SCROLL = 250vh). Waehrend man durch diese
+ * lange Strecke scrollt, ist der Inhalt gepinnt (pin) und die Animation laeuft
+ * mit scrub:1 exakt 1:1 mit dem Scroll mit -> die Visuelle Veraenderung
+ * (Scale/Rotate/Parallax/Reveal) ist ueber ~10 Viewports gestreckt statt
+ * snappy. Das ist die "10fache" Scroll-gesteuerte Transformation.
+ */
 export default function MonCard({ mon, index, onReveal }) {
   const sectionRef = useRef(null);
   const pinRef = useRef(null);
@@ -16,7 +24,7 @@ export default function MonCard({ mon, index, onReveal }) {
 
   const primary = TYPE_COLORS[mon.types[0]] || "#6d28d9";
   const secondary = TYPE_COLORS[mon.types[1]] || primary;
-  const dir = index % 2 === 0 ? 1 : -1;
+  const dir = index % 2 === 0 ? 1 : -1; // abwechselnd links/rechts
 
   useLayoutEffect(() => {
     const section = sectionRef.current;
@@ -30,9 +38,14 @@ export default function MonCard({ mon, index, onReveal }) {
         end: () => "+=" + window.innerHeight * 4,
         pin: pin,
         scrub: 1,
-        anticipateIn: 1,
         anticipatePin: 1,
         invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          if (!revealedRef.current && self.progress > 0.08) {
+            revealedRef.current = true;
+            onReveal?.(mon.id);
+          }
+        },
       },
     });
 
@@ -63,12 +76,12 @@ export default function MonCard({ mon, index, onReveal }) {
       tl.scrollTrigger && tl.scrollTrigger.kill();
       tl.kill();
     };
-  }, [mon, index, dir, primary, secondary]);
+  }, [mon, index, dir, primary, secondary, onReveal]);
 
   const total = mon.stats.reduce((s, x) => s + x.value, 0);
 
   return (
-    <section ref={sectionRef} data-id={mon.id} className="card-section">
+    <section ref={sectionRef} className="card-section">
       <div ref={pinRef} className="card-pin">
         <div ref={bgRef} className="card-bg" />
         <div ref={numRef} className="card-num">
@@ -81,13 +94,21 @@ export default function MonCard({ mon, index, onReveal }) {
             style={{ filter: `drop-shadow(0 0 28px ${primary}aa)` }}
           >
             <img ref={imgRef} src={mon.artwork} alt={mon.name_de} loading="lazy" />
+            <div className="card-types">
+              {mon.types.map((t) => (
+                <span key={t} className="type-badge" style={{ background: TYPE_COLORS[t] }}>
+                  {t}
+                </span>
+              ))}
+            </div>
           </div>
 
           <div ref={panelRef} className="card-panel neon-border sheen" style={{ "--tc": primary }}>
             <span className="holo-glass" aria-hidden="true"></span>
             <h2>{mon.name_de}</h2>
             <p className="card-sub">
-              #{String(mon.id).padStart(3, "0")} · {mon.height / 10} m · {mon.weight / 10} kg
+              #{String(mon.id).padStart(3, "0")} · {mon.height / 10} m ·{" "}
+              {mon.weight / 10} kg
             </p>
             <div className="stat-grid">
               {mon.stats.map((s) => (
