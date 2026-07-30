@@ -45,11 +45,28 @@ export default function BoosterOpen({ onClose, onUnlock }) {
 
   // Booster öffnen: wähle zufälliges Item
   const openBooster = useCallback(async () => {
-    if (phase !== "idle" || !isSupabaseReady || !user) return;
-
+    if (phase !== "idle") return;
     setPhase("opening");
     setError(null);
     try { play(SFX.ui.click); } catch { /* no sound file yet */ }
+
+    // Ohne Login: lokal öffnen, kein Supabase-Write.
+    if (!isSupabaseReady || !user) {
+      const roll = Math.random();
+      let item;
+      if (roll < 0.3) {
+        item = { type: "spider", name_de: "NEUE SPINNE", rarity: "common" };
+      } else if (roll < 0.9) {
+        item = { type: "steroid", name_de: "STEROID-VIAL", rarity: "rare" };
+      } else {
+        item = { type: "collector", name_de: "COLLECTOR'S ITEM", rarity: "legendary" };
+      }
+      setUnlockedItem(item);
+      setPhase("revealed");
+      try { play(SFX.ui.collect); } catch { /* silent */ }
+      if (onUnlock) onUnlock(item);
+      return;
+    }
 
     try {
       const supabase = getSupabase();
@@ -78,7 +95,6 @@ export default function BoosterOpen({ onClose, onUnlock }) {
       // 3. Item verarbeiten
       let item;
       if (itemType === "spider" && lockedSpiders && lockedSpiders.length > 0) {
-        // Spider freischalten
         const spider = lockedSpiders[Math.floor(Math.random() * lockedSpiders.length)];
         const { error: unlockErr } = await supabase
           .from("user_unlocks")
@@ -88,7 +104,6 @@ export default function BoosterOpen({ onClose, onUnlock }) {
 
         item = { type: "spider", ...spider };
       } else if (itemType === "steroid") {
-        // Steroid zum Inventar hinzufügen
         const { data: saveData, error: saveErr } = await supabase
           .from("user_saves")
           .select("steroids")
@@ -109,7 +124,6 @@ export default function BoosterOpen({ onClose, onUnlock }) {
 
         item = { type: "steroid", name_de: "STEROID-VIAL", rarity: "rare" };
       } else {
-        // Collector-Item (Sammler-Item) speichern
         const { data: saveData, error: saveErr } = await supabase
           .from("user_saves")
           .select("collectors")
@@ -135,7 +149,6 @@ export default function BoosterOpen({ onClose, onUnlock }) {
       setPhase("revealed");
       play(SFX.ui.collect);
 
-      // Callback für Inventar/Dex-Update
       if (onUnlock) onUnlock(item);
 
     } catch (err) {
@@ -143,7 +156,7 @@ export default function BoosterOpen({ onClose, onUnlock }) {
       setError(err.message || "Fehler beim Öffnen des Boosters.");
       setPhase("idle");
     }
-  }, [phase, user]);
+  }, [phase, user, play, onUnlock]);
 
   // Hilfsfunktion: IDs der bereits freigeschalteten Spider holen
   async function getUserUnlockedIds(supabase, userId) {

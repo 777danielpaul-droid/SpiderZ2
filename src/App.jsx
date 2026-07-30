@@ -36,10 +36,11 @@ export default function App() {
   const [hudVisible, setHudVisible] = useState(false);
   const [hudCollapsed, setHudCollapsed] = useState(true); // Mobile: HUD startet eingefahren (nur Kante), per Tap ausfahren
   const toggleHud = useCallback(() => setHudCollapsed((c) => !c), []);
-  const [headerCollapsed, setHeaderCollapsed] = useState(false); // Mobile: Header nach Intro auto-einfahren
+  const [headerCollapsed, setHeaderCollapsed] = useState(false);
   const toggleHeader = useCallback(() => setHeaderCollapsed((c) => !c), []);
+  const [rulesPassed, setRulesPassed] = useState(false);
   const handleScrubReady = useCallback(() => {
-    // Nur mobil: nach der Frame2Frame-Animation automatisch einfahren.
+    setRulesPassed(true);
     if (typeof window !== "undefined" && window.matchMedia("(max-width: 767px)").matches) {
       const t = setTimeout(() => setHeaderCollapsed(true), 2600);
       return () => clearTimeout(t);
@@ -99,7 +100,12 @@ export default function App() {
   const ENEMY_BOOST = level === 3 ? 200 : 0;
   const [arenaOpponents, setArenaOpponents] = useState(null); // Array(LEVEL_TEAM_SIZE) oder null
   useEffect(() => {
-    if (!allData || caughtIds.length < LEVEL_TEAM_SIZE || boostedId == null) { setArenaOpponents(null); return; }
+    if (!allData || caughtIds.length < LEVEL_TEAM_SIZE) { setArenaOpponents(null); return; }
+    const target = boostedId == null && vialTaken && caughtIds.length
+      ? caughtIds[0]
+      : boostedId;
+    if (target == null) { setArenaOpponents(null); return; }
+    if (boostedId == null && target != null) setBoostedId(target);
     const own = new Set(caughtIds);
     const pool = allData.filter((m) => !own.has(m.id));
     const shuffled = pool
@@ -108,7 +114,7 @@ export default function App() {
       .slice(0, LEVEL_TEAM_SIZE)
       .map((x) => x.m);
     setArenaOpponents(shuffled);
-  }, [allData, caughtIds, boostedId, LEVEL_TEAM_SIZE]);
+  }, [allData, caughtIds, boostedId, vialTaken, LEVEL_TEAM_SIZE]);
 
   // Arena-Matches (1:1 in Reihenfolge) + Gesamt-Ergebnis.
   // Geboostete Spinne bekommt +100 Stärke vor dem Match.
@@ -439,10 +445,10 @@ export default function App() {
       <header className={`site-header${headerCollapsed ? " header-collapsed" : ""}`} ref={headerRef}>
       <span className="holo-glass" aria-hidden="true"></span>
         {/* Logo oben links: Klick scrollt zum Seitenanfang */}
-        <a className="site-logo" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); }} aria-label="SpiderZ - Zum Seitenanfang">SPIDER<span>Z</span></a>
+        <a className="site-logo" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); }} aria-label="SpiderZ - Zum Seitenanfang">POKÉ<span>MON</span></a>
         <nav className="site-nav">
           {/* Anker "SpiderZ" öffnet direkt den NASAMON-Dex */}
-          <a className="site-link" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); setHudView("dex"); }}>SpiderZ</a>
+          <a className="site-link" href="#spiderz" onClick={(e) => { e.preventDefault(); scrollToId("spiderz"); setHudView("dex"); }}>POKÉMON</a>
           <a className="site-link" href="#story" onClick={(e) => { e.preventDefault(); scrollToId("story"); }}>Spielregeln</a>
           <button type="button" className="site-link lore-link" onClick={() => setLoreOpen(true)}>Lore</button>
           <a className="site-link" href={import.meta.env.BASE_URL + "datenschutz.html"} target="_blank" rel="noopener">Datenschutz</a>
@@ -531,11 +537,11 @@ export default function App() {
         steroids={steroids}
         onUseSteroid={() => {
           const current = loadSteroids();
-          if (current > 0) {
-            saveSteroids(current - 1);
-            setSteroids((n) => n - 1);
-            console.log("[steroid] +100 Stärke für nächsten Kampf");
-          }
+          if (current <= 0) return;
+          saveSteroids(current - 1);
+          setSteroids((n) => n - 1);
+          setVialTaken(true);
+          console.log("[steroid] +100 Stärke für nächsten Kampf");
         }}
         collectors={loadCollectors()}
         totalCollectors={TOTAL_COLLECTORS}
@@ -635,7 +641,7 @@ export default function App() {
         <div className="loader error">Fehler beim Laden: {error}</div>
       )}
 
-      {data && (
+      {data && rulesPassed && (
         <main className="cards">
           {data.slice(0, LEVEL_TEAM_SIZE).map((p, i) => (
             <MonCard

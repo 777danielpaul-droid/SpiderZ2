@@ -49,8 +49,11 @@ function shuffle(arr) {
   return a;
 }
 
-// Zufällige IDs aus dem nationalen Dex-Bereich.
-function randomIds(count = TOTAL_MON, max = TOTAL_MON) {
+// Zufällige IDs aus einem größeren PokeAPI-Pool,
+// nicht nur 1..TOTAL_MON. So kommen pro Runde andere Monster.
+const POOL_MAX = 151;
+
+function randomIds(count = TOTAL_MON, max = POOL_MAX) {
   return shuffle(Array.from({ length: max }, (_, i) => i + 1)).slice(0, count);
 }
 
@@ -94,6 +97,8 @@ export function useMonData(count = TOTAL_MON) {
   const [progress, setProgress] = useState(0);
   const [search, setSearch] = useState({ loading: false, result: null, error: null });
   const [allData, setAllData] = useState(null);
+  const allIdsRef = useRef(null);
+  if (allIdsRef.current === null) allIdsRef.current = randomIds(TOTAL_MON, TOTAL_MON);
 
   const idsRef = useRef(null);
   if (idsRef.current === null) idsRef.current = randomIds(count);
@@ -133,12 +138,12 @@ export function useMonData(count = TOTAL_MON) {
     (async () => {
       try {
         const all = [];
-        for (let id = 1; id <= TOTAL_MON; id++) {
+        for (const id of allIdsRef.current) {
           all.push(await fetchPokeMon(id));
         }
         if (!cancelled) setAllData(all);
       } catch {
-        // nicht kritisch
+        // nicht kritisch fuer das Hauptspiel
       }
     })();
     return () => { cancelled = true; };
